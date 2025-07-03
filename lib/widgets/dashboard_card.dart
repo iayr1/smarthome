@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../styles/app_color.dart';
+import '../styles/app_typography.dart';
 
 class DashboardCard extends StatelessWidget {
   final String title;
@@ -20,72 +22,179 @@ class DashboardCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final screenWidth = mediaQuery.size.width;
+    final isTablet = screenWidth >= 768;
+    final isDesktop = screenWidth >= 1024;
+
     return Container(
-      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
+        // Subtle outer border with gradient colors
         gradient: LinearGradient(
-          colors: gradient,
+          colors: [
+            gradient[0].withOpacity(0.1),
+            gradient[1].withOpacity(0.1),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: gradient[0].withOpacity(0.3),
-            blurRadius: 12,
-            offset: Offset(0, 6),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(isDesktop ? 24 : (isTablet ? 20 : 18)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.9),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
+      padding: const EdgeInsets.all(2), // Space for the outer border effect
+      child: Container(
+        padding: EdgeInsets.all(isDesktop ? 24 : (isTablet ? 20 : 16)),
+        decoration: BoxDecoration(
+          // Main gradient background
+          gradient: LinearGradient(
+            colors: gradient,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(isDesktop ? 22 : (isTablet ? 18 : 16)),
+          // Subtle inner border for depth
+          border: Border.all(
+            color: Colors.white.withOpacity(0.1),
+            width: 1,
+          ),
+        ),
+        child: Stack(
+          children: [
+            // Background decorative elements
+            Positioned(
+              top: -20,
+              right: -20,
+              child: Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.05),
                 ),
               ),
-              Icon(
-                icon,
-                color: Colors.white.withOpacity(0.9),
-                size: 20,
-              ),
-            ],
-          ),
-          SizedBox(height: 12),
-          if (isLoading)
-            SizedBox(
-              height: 20,
-              width: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-            )
-          else
-            Text(
-              value,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+            ),
+            Positioned(
+              bottom: -30,
+              left: -30,
+              child: Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.03),
+                ),
               ),
             ),
-          SizedBox(height: 4),
-          Text(
-            subtitle,
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.8),
-              fontSize: 12,
+            // Main content
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: isDesktop
+                            ? AppTypography.bodyTextLargeMedium.copyWith(
+                          color: AppColors.white.withOpacity(0.9),
+                        )
+                            : (isTablet
+                            ? AppTypography.bodyTextMedium.copyWith(
+                          color: AppColors.white.withOpacity(0.9),
+                        )
+                            : AppTypography.bodyTextSmallMedium.copyWith(
+                          color: AppColors.white.withOpacity(0.9),
+                        )),
+                      ),
+                    ),
+                    Container(
+                      padding: EdgeInsets.all(isDesktop ? 12 : (isTablet ? 10 : 8)),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(isDesktop ? 16 : (isTablet ? 14 : 12)),
+                        // Subtle inner glow effect
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.1),
+                          width: 1,
+                        ),
+                      ),
+                      child: Icon(
+                        icon,
+                        color: AppColors.white.withOpacity(0.95),
+                        size: isDesktop ? 24 : (isTablet ? 22 : 20),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: isDesktop ? 20 : (isTablet ? 16 : 14)),
+                if (isLoading)
+                  Container(
+                    padding: EdgeInsets.symmetric(vertical: isDesktop ? 8 : 6),
+                    child: SizedBox(
+                      height: isDesktop ? 24 : (isTablet ? 22 : 20),
+                      width: isDesktop ? 24 : (isTablet ? 22 : 20),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.white.withOpacity(0.9),
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  Container(
+                    padding: EdgeInsets.symmetric(vertical: 2),
+                    child: Text(
+                      value,
+                      style: isDesktop
+                          ? AppTypography.h4Bold.copyWith(
+                        color: AppColors.white,
+                        letterSpacing: -0.5,
+                      )
+                          : (isTablet
+                          ? AppTypography.h5Bold.copyWith(
+                        color: AppColors.white,
+                        letterSpacing: -0.3,
+                      )
+                          : AppTypography.h6Bold.copyWith(
+                        color: AppColors.white,
+                        letterSpacing: -0.2,
+                      )),
+                    ),
+                  ),
+                SizedBox(height: isDesktop ? 12 : (isTablet ? 10 : 8)),
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isDesktop ? 12 : (isTablet ? 10 : 8),
+                    vertical: isDesktop ? 6 : (isTablet ? 5 : 4),
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(isDesktop ? 12 : (isTablet ? 10 : 8)),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.05),
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    subtitle,
+                    style: isDesktop
+                        ? AppTypography.bodyTextSmallMedium.copyWith(
+                      color: AppColors.white.withOpacity(0.85),
+                    )
+                        : (isTablet
+                        ? AppTypography.bodyTextXtraSmallMedium.copyWith(
+                      color: AppColors.white.withOpacity(0.85),
+                    )
+                        : AppTypography.bodyTextXtraSmallMedium.copyWith(
+                      color: AppColors.white.withOpacity(0.85),
+                    )),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/device.dart';
+import '../styles/app_color.dart';
+import '../styles/app_typography.dart';
+
 
 class DeviceCard extends StatefulWidget {
   final Device device;
@@ -25,12 +28,12 @@ class _DeviceCardState extends State<DeviceCard> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    
+
     _scaleController = AnimationController(
       duration: Duration(milliseconds: 150),
       vsync: this,
     );
-    
+
     _iconRotationController = AnimationController(
       duration: Duration(milliseconds: 300),
       vsync: this,
@@ -60,29 +63,34 @@ class _DeviceCardState extends State<DeviceCard> with TickerProviderStateMixin {
   }
 
   Color get _primaryColor {
-    if (!widget.device.isOn) return Color(0xFF64748B);
+    if (!widget.device.isOn) return AppColors.grayScale70;
     final iconData = widget.device.iconData;
     if (iconData == Icons.lightbulb || iconData == Icons.lightbulb_outline) {
-      return Color(0xFFFFC107);
+      return AppColors.warning;
     } else if (iconData == Icons.ac_unit) {
-      return Color(0xFF2196F3);
+      return AppColors.secondary100;
     } else if (iconData == Icons.mode_fan_off || iconData == Icons.air) {
-      return Color(0xFF00BCD4);
+      return AppColors.tertiary100;
     } else if (iconData == Icons.speaker) {
-      return Color(0xFF9C27B0);
+      return AppColors.error;
     } else if (iconData == Icons.tv) {
-      return Color(0xFF4CAF50);
+      return AppColors.success;
     } else if (iconData == Icons.kitchen || iconData == Icons.coffee) {
-      return Color(0xFFFF9800);
+      return AppColors.primary;
     } else if (iconData == Icons.hot_tub) {
-      return Color(0xFFFF5722);
+      return AppColors.primary80;
     } else {
-      return Color(0xFF3B82F6);
+      return AppColors.primary;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final screenWidth = mediaQuery.size.width;
+    final isTablet = screenWidth >= 768;
+    final isDesktop = screenWidth >= 1024;
+
     return GestureDetector(
       onTapDown: (_) => _scaleController.forward(),
       onTapUp: (_) => _scaleController.reverse(),
@@ -93,20 +101,20 @@ class _DeviceCardState extends State<DeviceCard> with TickerProviderStateMixin {
         child: AnimatedContainer(
           duration: Duration(milliseconds: 300),
           curve: Curves.easeInOut,
-          padding: EdgeInsets.all(16),
+          padding: EdgeInsets.all(isDesktop ? 20 : (isTablet ? 18 : 16)),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(isDesktop ? 20 : (isTablet ? 18 : 16)),
             border: widget.device.isOn
                 ? Border.all(color: _primaryColor.withOpacity(0.3), width: 1.5)
-                : Border.all(color: Colors.grey.withOpacity(0.2), width: 1),
+                : Border.all(color: AppColors.line, width: 1),
             boxShadow: [
               BoxShadow(
                 color: widget.device.isOn
                     ? _primaryColor.withOpacity(0.15)
-                    : Colors.black.withOpacity(0.05),
-                blurRadius: widget.device.isOn ? 12 : 8,
-                offset: Offset(0, widget.device.isOn ? 6 : 3),
+                    : AppColors.grayScale100.withOpacity(0.05),
+                blurRadius: widget.device.isOn ? (isDesktop ? 16 : 12) : (isDesktop ? 12 : 8),
+                offset: Offset(0, widget.device.isOn ? (isDesktop ? 8 : 6) : (isDesktop ? 4 : 3)),
               ),
             ],
           ),
@@ -119,25 +127,25 @@ class _DeviceCardState extends State<DeviceCard> with TickerProviderStateMixin {
                   RotationTransition(
                     turns: _iconRotationAnimation,
                     child: Container(
-                      padding: EdgeInsets.all(8),
+                      padding: EdgeInsets.all(isDesktop ? 12 : (isTablet ? 10 : 8)),
                       decoration: BoxDecoration(
                         color: _primaryColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(isDesktop ? 12 : (isTablet ? 10 : 8)),
                       ),
                       child: Icon(
                         widget.device.iconData,
                         color: _primaryColor,
-                        size: 24,
+                        size: isDesktop ? 28 : (isTablet ? 26 : 24),
                       ),
                     ),
                   ),
                   AnimatedContainer(
                     duration: Duration(milliseconds: 300),
-                    width: 44,
-                    height: 24,
+                    width: isDesktop ? 52 : (isTablet ? 48 : 44),
+                    height: isDesktop ? 28 : (isTablet ? 26 : 24),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color: widget.device.isOn ? _primaryColor : Color(0xFFE2E8F0),
+                      borderRadius: BorderRadius.circular(isDesktop ? 16 : (isTablet ? 14 : 12)),
+                      color: widget.device.isOn ? _primaryColor : AppColors.grayScale30,
                     ),
                     child: AnimatedAlign(
                       duration: Duration(milliseconds: 300),
@@ -145,15 +153,15 @@ class _DeviceCardState extends State<DeviceCard> with TickerProviderStateMixin {
                           ? Alignment.centerRight
                           : Alignment.centerLeft,
                       child: Container(
-                        width: 20,
-                        height: 20,
+                        width: isDesktop ? 24 : (isTablet ? 22 : 20),
+                        height: isDesktop ? 24 : (isTablet ? 22 : 20),
                         margin: EdgeInsets.all(2),
                         decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
+                          color: AppColors.white,
+                          borderRadius: BorderRadius.circular(isDesktop ? 12 : (isTablet ? 11 : 10)),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
+                              color: AppColors.grayScale100.withOpacity(0.1),
                               blurRadius: 4,
                               offset: Offset(0, 2),
                             ),
@@ -164,50 +172,55 @@ class _DeviceCardState extends State<DeviceCard> with TickerProviderStateMixin {
                   ),
                 ],
               ),
-              
-              SizedBox(height: 16),
-              
-              // Device name
+
+              SizedBox(height: isDesktop ? 20 : (isTablet ? 18 : 16)),
+
               Text(
                 widget.device.name,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1E293B),
-                ),
+                style: isDesktop
+                    ? AppTypography.bodyTextLargeSemiBold.copyWith(color: AppColors.grayScale100)
+                    : (isTablet
+                    ? AppTypography.bodyTextMedium.copyWith(color: AppColors.grayScale100)
+                    : AppTypography.bodyTextSmallSemiBold.copyWith(color: AppColors.grayScale100)),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              
-              SizedBox(height: 4),
+
+              SizedBox(height: isDesktop ? 8 : (isTablet ? 6 : 4)),
               Text(
                 widget.device.isOn ? widget.device.reading : 'Off',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: widget.device.isOn ? _primaryColor : Color(0xFF64748B),
-                  fontWeight: widget.device.isOn ? FontWeight.w500 : FontWeight.normal,
-                ),
+                style: isDesktop
+                    ? AppTypography.bodyTextMedium.copyWith(
+                  color: widget.device.isOn ? _primaryColor : AppColors.grayScale70,
+                )
+                    : (isTablet
+                    ? AppTypography.bodyTextSmallMedium.copyWith(
+                  color: widget.device.isOn ? _primaryColor : AppColors.grayScale70,
+                )
+                    : AppTypography.bodyTextXtraSmallMedium.copyWith(
+                  color: widget.device.isOn ? _primaryColor : AppColors.grayScale70,
+                )),
               ),
-              
-              SizedBox(height: 8),
+
+              SizedBox(height: isDesktop ? 12 : (isTablet ? 10 : 8)),
               Row(
                 children: [
                   Container(
-                    width: 8,
-                    height: 8,
+                    width: isDesktop ? 10 : (isTablet ? 9 : 8),
+                    height: isDesktop ? 10 : (isTablet ? 9 : 8),
                     decoration: BoxDecoration(
-                      color: widget.device.isOn ? _primaryColor : Color(0xFF94A3B8),
-                      borderRadius: BorderRadius.circular(4),
+                      color: widget.device.isOn ? _primaryColor : AppColors.grayScale60,
+                      borderRadius: BorderRadius.circular(isDesktop ? 5 : (isTablet ? 4.5 : 4)),
                     ),
                   ),
-                  SizedBox(width: 6),
+                  SizedBox(width: isDesktop ? 8 : (isTablet ? 7 : 6)),
                   Text(
                     widget.device.isOn ? 'Active' : 'Inactive',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF94A3B8),
-                      fontWeight: FontWeight.w400,
-                    ),
+                    style: isDesktop
+                        ? AppTypography.bodyTextSmallMedium.copyWith(color: AppColors.grayScale60)
+                        : (isTablet
+                        ? AppTypography.bodyTextXtraSmallMedium.copyWith(color: AppColors.grayScale60)
+                        : AppTypography.bodyTextXtraSmallMedium.copyWith(color: AppColors.grayScale60)),
                   ),
                 ],
               ),

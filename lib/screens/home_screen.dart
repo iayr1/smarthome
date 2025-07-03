@@ -1,7 +1,8 @@
-// screens/home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/smart_home_provider.dart';
+import '../styles/app_color.dart';
+import '../styles/app_typography.dart';
 import '../widgets/dashboard_card.dart';
 import '../widgets/room_card.dart';
 import '../widgets/device_grid.dart';
@@ -39,23 +40,32 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final screenWidth = mediaQuery.size.width;
+    final screenHeight = mediaQuery.size.height;
+    final isTablet = screenWidth >= 768;
+    final isDesktop = screenWidth >= 1024;
+
     return Scaffold(
-      backgroundColor: Color(0xFFF8FAFC),
+      backgroundColor: AppColors.grayScale10,
       body: SafeArea(
         child: FadeTransition(
           opacity: _fadeAnimation,
           child: SingleChildScrollView(
-            padding: EdgeInsets.all(20),
+            padding: EdgeInsets.symmetric(
+              horizontal: isDesktop ? 32 : (isTablet ? 24 : 16),
+              vertical: isDesktop ? 24 : (isTablet ? 20 : 16),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildHeader(),
-                SizedBox(height: 24),
-                _buildDashboard(),
-                SizedBox(height: 32),
-                _buildRoomsSection(),
-                SizedBox(height: 24),
-                _buildDevicesSection(),
+                _buildHeader(screenWidth, isTablet, isDesktop),
+                SizedBox(height: isDesktop ? 32 : (isTablet ? 24 : 20)),
+                _buildDashboard(screenWidth, isTablet, isDesktop),
+                SizedBox(height: isDesktop ? 40 : (isTablet ? 32 : 24)),
+                _buildRoomsSection(screenWidth, isTablet, isDesktop),
+                SizedBox(height: isDesktop ? 32 : (isTablet ? 24 : 20)),
+                _buildDevicesSection(screenWidth, isTablet, isDesktop),
               ],
             ),
           ),
@@ -64,42 +74,47 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(double screenWidth, bool isTablet, bool isDesktop) {
     return Consumer<SmartHomeProvider>(
       builder: (context, provider, child) {
         return Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  provider.greeting,
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1E293B),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    provider.greeting,
+                    style: isDesktop
+                        ? AppTypography.h2Bold.copyWith(color: AppColors.grayScale100)
+                        : (isTablet
+                        ? AppTypography.h3Bold.copyWith(color: AppColors.grayScale100)
+                        : AppTypography.h4Bold.copyWith(color: AppColors.grayScale100)),
                   ),
-                ),
-                Text(
-                  'Welcome to your smart home',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF64748B),
+                  SizedBox(height: 4),
+                  Text(
+                    'Welcome to your smart home',
+                    style: isDesktop
+                        ? AppTypography.bodyTextLargeMedium.copyWith(color: AppColors.grayScale70)
+                        : (isTablet
+                        ? AppTypography.bodyTextMedium.copyWith(color: AppColors.grayScale70)
+                        : AppTypography.bodyTextSmallMedium.copyWith(color: AppColors.grayScale70)),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             GestureDetector(
               onTap: () => provider.toggleTemperatureUnit(),
               child: Container(
-                padding: EdgeInsets.all(12),
+                width: isDesktop ? 56 : (isTablet ? 48 : 44),
+                height: isDesktop ? 56 : (isTablet ? 48 : 44),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(isDesktop ? 16 : (isTablet ? 14 : 12)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: AppColors.grayScale100.withOpacity(0.1),
                       blurRadius: 10,
                       offset: Offset(0, 4),
                     ),
@@ -107,8 +122,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
                 child: Icon(
                   provider.isCelsius ? Icons.thermostat : Icons.ac_unit,
-                  color: Color(0xFF3B82F6),
-                  size: 24,
+                  color: AppColors.primary,
+                  size: isDesktop ? 28 : (isTablet ? 24 : 20),
                 ),
               ),
             ),
@@ -118,52 +133,100 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildDashboard() {
+  Widget _buildDashboard(double screenWidth, bool isTablet, bool isDesktop) {
     return Consumer<SmartHomeProvider>(
       builder: (context, provider, child) {
-        return Row(
-          children: [
-            Expanded(
-              child: DashboardCard(
+        if (isDesktop) {
+          return Row(
+            children: [
+              Expanded(
+                child: DashboardCard(
+                  title: 'Weather',
+                  value: provider.weather?.getTemperatureString(provider.isCelsius) ?? '--°C',
+                  subtitle: provider.weather?.condition ?? 'Loading...',
+                  icon: Icons.wb_sunny,
+                  gradient: [AppColors.tertiary80, AppColors.primary],
+                  isLoading: provider.isLoadingWeather,
+                ),
+              ),
+              SizedBox(width: 24),
+              Expanded(
+                child: DashboardCard(
+                  title: 'Energy',
+                  value: '${provider.energyUsage.toStringAsFixed(1)} kW',
+                  subtitle: 'Current usage',
+                  icon: Icons.bolt,
+                  gradient: [AppColors.success50, AppColors.success70],
+                ),
+              ),
+            ],
+          );
+        } else if (isTablet) {
+          return Row(
+            children: [
+              Expanded(
+                child: DashboardCard(
+                  title: 'Weather',
+                  value: provider.weather?.getTemperatureString(provider.isCelsius) ?? '--°C',
+                  subtitle: provider.weather?.condition ?? 'Loading...',
+                  icon: Icons.wb_sunny,
+                  gradient: [AppColors.tertiary80, AppColors.primary],
+                  isLoading: provider.isLoadingWeather,
+                ),
+              ),
+              SizedBox(width: 16),
+              Expanded(
+                child: DashboardCard(
+                  title: 'Energy',
+                  value: '${provider.energyUsage.toStringAsFixed(1)} kW',
+                  subtitle: 'Current usage',
+                  icon: Icons.bolt,
+                  gradient: [AppColors.success50, AppColors.success70],
+                ),
+              ),
+            ],
+          );
+        } else {
+          return Column(
+            children: [
+              DashboardCard(
                 title: 'Weather',
                 value: provider.weather?.getTemperatureString(provider.isCelsius) ?? '--°C',
                 subtitle: provider.weather?.condition ?? 'Loading...',
                 icon: Icons.wb_sunny,
-                gradient: [Color(0xFFFFEB3B), Color(0xFFFF9800)],
+                gradient: [AppColors.tertiary80, AppColors.primary],
                 isLoading: provider.isLoadingWeather,
               ),
-            ),
-            SizedBox(width: 16),
-            Expanded(
-              child: DashboardCard(
+              SizedBox(height: 16),
+              DashboardCard(
                 title: 'Energy',
                 value: '${provider.energyUsage.toStringAsFixed(1)} kW',
                 subtitle: 'Current usage',
                 icon: Icons.bolt,
-                gradient: [Color(0xFF4CAF50), Color(0xFF8BC34A)],
+                gradient: [AppColors.success50, AppColors.success70],
               ),
-            ),
-          ],
-        );
+            ],
+          );
+        }
       },
     );
   }
 
-  Widget _buildRoomsSection() {
+  Widget _buildRoomsSection(double screenWidth, bool isTablet, bool isDesktop) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Rooms',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF1E293B),
-          ),
+          style: isDesktop
+              ? AppTypography.h3Bold.copyWith(color: AppColors.grayScale100)
+              : (isTablet
+              ? AppTypography.h4Bold.copyWith(color: AppColors.grayScale100)
+              : AppTypography.h5Bold.copyWith(color: AppColors.grayScale100)),
         ),
-        SizedBox(height: 16),
+        SizedBox(height: isDesktop ? 20 : (isTablet ? 16 : 12)),
         Container(
-          height: 120,
+          height: isDesktop ? 140 : (isTablet ? 130 : 120),
           child: Consumer<SmartHomeProvider>(
             builder: (context, provider, child) {
               return ListView.builder(
@@ -172,7 +235,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 itemBuilder: (context, index) {
                   final room = provider.rooms[index];
                   return Padding(
-                    padding: EdgeInsets.only(right: 16),
+                    padding: EdgeInsets.only(right: isDesktop ? 20 : (isTablet ? 16 : 12)),
                     child: RoomCard(
                       room: room,
                       isSelected: room.id == provider.selectedRoomId,
@@ -188,37 +251,50 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildDevicesSection() {
+  Widget _buildDevicesSection(double screenWidth, bool isTablet, bool isDesktop) {
     return Consumer<SmartHomeProvider>(
       builder: (context, provider, child) {
         final selectedRoom = provider.rooms.firstWhere(
-          (room) => room.id == provider.selectedRoomId,
+              (room) => room.id == provider.selectedRoomId,
         );
-        
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '${selectedRoom.name} Devices',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1E293B),
+                Expanded(
+                  child: Text(
+                    '${selectedRoom.name} Devices',
+                    style: isDesktop
+                        ? AppTypography.h3Bold.copyWith(color: AppColors.grayScale100)
+                        : (isTablet
+                        ? AppTypography.h4Bold.copyWith(color: AppColors.grayScale100)
+                        : AppTypography.h5Bold.copyWith(color: AppColors.grayScale100)),
                   ),
                 ),
-                Text(
-                  '${provider.selectedRoomDevices.where((d) => d.isOn).length} active',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF64748B),
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isDesktop ? 16 : (isTablet ? 12 : 8),
+                    vertical: isDesktop ? 8 : (isTablet ? 6 : 4),
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary10,
+                    borderRadius: BorderRadius.circular(isDesktop ? 12 : (isTablet ? 10 : 8)),
+                  ),
+                  child: Text(
+                    '${provider.selectedRoomDevices.where((d) => d.isOn).length} active',
+                    style: isDesktop
+                        ? AppTypography.bodyTextMedium.copyWith(color: AppColors.primary)
+                        : (isTablet
+                        ? AppTypography.bodyTextSmallMedium.copyWith(color: AppColors.primary)
+                        : AppTypography.bodyTextXtraSmallMedium.copyWith(color: AppColors.primary)),
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 16),
+            SizedBox(height: isDesktop ? 20 : (isTablet ? 16 : 12)),
             DeviceGrid(
               devices: provider.selectedRoomDevices,
               onDeviceToggle: provider.toggleDevice,
